@@ -16,7 +16,7 @@ module SalaryCalculator
     net   = gross - cas - cass - iv
 
     {
-      total_cost: total_cost,
+      total_cost: total_cost.round(0),
       gross: gross,
       cam: cam,
       cas: cas,

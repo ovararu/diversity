@@ -268,6 +268,12 @@ class CardTopUpsControllerTest < ActionDispatch::IntegrationTest
   # gross param = total employer cost (Salariu Complet)
   # At 10000: gross(brut)=9780, cam=220, cas=2445, cass=978, iv=636, net=5721
 
+  test "GET salary_preview returns total_cost equal to input" do
+    get salary_preview_card_top_ups_path, params: { gross: "10000" }
+    data = JSON.parse(response.body)
+    assert_equal 10000, data["total_cost"]
+  end
+
   test "GET salary_preview returns correct gross (Salariu Brut)" do
     get salary_preview_card_top_ups_path, params: { gross: "10000" }
     data = JSON.parse(response.body)

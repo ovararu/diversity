@@ -38,7 +38,7 @@ export default class extends Controller {
     this.previewNetTarget.textContent    = this.fmt(data.net)
 
     if (this.hasNetAmountTarget) this.netAmountTarget.value  = data.net
-    if (this.hasGrossAmountTarget) this.grossAmountTarget.value = data.gross
+    if (this.hasGrossAmountTarget) this.grossAmountTarget.value = data.total_cost
 
     this.fillDeductions(data)
 
