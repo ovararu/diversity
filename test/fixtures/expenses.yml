@@ -1,0 +1,16 @@
+food_expense:
+  date: 2026-01-20
+  description: "Kaufland groceries"
+  amount: 300.00
+  category: Food
+
+transport_expense:
+  date: 2026-01-25
+  description: "Bus pass"
+  amount: 100.00
+  category: Transport
+
+no_category_expense:
+  date: 2026-01-28
+  description: "Miscellaneous"
+  amount: 50.00

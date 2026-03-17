@@ -1,0 +1,20 @@
+cas_deduction:
+  card_top_up: salary_top_up
+  name: CAS
+  amount: 1250.00
+  percentage: 25.00
+  paid_by: employee
+
+cass_deduction:
+  card_top_up: salary_top_up
+  name: CASS
+  amount: 500.00
+  percentage: 10.00
+  paid_by: employee
+
+cam_deduction:
+  card_top_up: salary_top_up
+  name: CAM
+  amount: 168.75
+  percentage: 2.25
+  paid_by: employer

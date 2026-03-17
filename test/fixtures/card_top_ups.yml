@@ -1,0 +1,26 @@
+salary_top_up:
+  date: 2026-01-15
+  description: "January Salary"
+  source_type: salary
+  net_amount: 5000.00
+  gross_amount: 7500.00
+  eur_rate: 5.0000
+
+transfer_top_up:
+  date: 2026-02-01
+  description: "Bank Transfer"
+  source_type: transfer
+  net_amount: 2000.00
+  eur_rate: 4.9700
+
+other_top_up:
+  date: 2026-02-10
+  description: "Other Source"
+  source_type: other
+  net_amount: 500.00
+
+no_eur_top_up:
+  date: 2026-02-15
+  description: "No EUR rate"
+  source_type: transfer
+  net_amount: 1000.00

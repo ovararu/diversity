@@ -1,0 +1,14 @@
+food_allocation:
+  expense: food_expense
+  card_top_up: salary_top_up
+  amount: 300.00
+
+transport_allocation:
+  expense: transport_expense
+  card_top_up: salary_top_up
+  amount: 100.00
+
+no_category_allocation:
+  expense: no_category_expense
+  card_top_up: transfer_top_up
+  amount: 50.00
