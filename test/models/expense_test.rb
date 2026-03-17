@@ -178,6 +178,61 @@ class ExpenseTest < ActiveSupport::TestCase
     assert_equal 250.0, alloc.amount.to_f
   end
 
+  test "cascades allocation: exhausts highest cost_ratio then moves to next" do
+    isolate_allocations
+
+    # top_up_a: net 500, deduction 500 → gross 1000, cost_ratio = 50%
+    top_up_a = CardTopUp.create!(date: Date.today, net_amount: 500, source_type: "salary")
+    SourceDeduction.create!(card_top_up: top_up_a, name: "CAS", amount: 500)
+
+    # top_up_b: net 800, deduction 200 → gross 1000, cost_ratio = 20%
+    top_up_b = CardTopUp.create!(date: Date.today, net_amount: 800, source_type: "salary")
+    SourceDeduction.create!(card_top_up: top_up_b, name: "CAS", amount: 200)
+
+    # top_up_c: net 600, no deductions → cost_ratio = 0%
+    top_up_c = CardTopUp.create!(date: Date.today, net_amount: 600, source_type: "transfer")
+
+    # Expense of 900: should take 500 from A (50%), then 400 from B (20%), nothing from C (0%)
+    expense = Expense.create!(date: Date.today, description: "Cascade test", amount: 900)
+
+    alloc_a = expense.expense_allocations.find_by(card_top_up: top_up_a)
+    alloc_b = expense.expense_allocations.find_by(card_top_up: top_up_b)
+    alloc_c = expense.expense_allocations.find_by(card_top_up: top_up_c)
+
+    assert_equal 500.0, alloc_a.amount.to_f, "Should exhaust top_up_a (50% cost ratio) first"
+    assert_equal 400.0, alloc_b.amount.to_f, "Should take remaining 400 from top_up_b (20%)"
+    assert_nil alloc_c, "Should not touch top_up_c (0%) when expense is already covered"
+
+    # Verify balances
+    assert_equal 0.0, top_up_a.reload.remaining_balance.to_f
+    assert_equal 400.0, top_up_b.reload.remaining_balance.to_f
+    assert_equal 600.0, top_up_c.reload.remaining_balance.to_f
+  end
+
+  test "second expense continues from where first expense left off" do
+    isolate_allocations
+
+    # top_up_a: net 300, deduction 300 → cost_ratio = 50%
+    top_up_a = CardTopUp.create!(date: Date.today, net_amount: 300, source_type: "salary")
+    SourceDeduction.create!(card_top_up: top_up_a, name: "CAS", amount: 300)
+
+    # top_up_b: net 500, no deductions → cost_ratio = 0%
+    top_up_b = CardTopUp.create!(date: Date.today, net_amount: 500, source_type: "transfer")
+
+    # First expense: 200 from A (highest cost%)
+    e1 = Expense.create!(date: Date.today, description: "First", amount: 200)
+    assert_equal 200.0, e1.expense_allocations.find_by(card_top_up: top_up_a).amount.to_f
+
+    # Second expense: 250 → takes remaining 100 from A, then 150 from B
+    e2 = Expense.create!(date: Date.today, description: "Second", amount: 250)
+    assert_equal 100.0, e2.expense_allocations.find_by(card_top_up: top_up_a).amount.to_f
+    assert_equal 150.0, e2.expense_allocations.find_by(card_top_up: top_up_b).amount.to_f
+
+    # A is now fully exhausted
+    assert_equal 0.0, top_up_a.reload.remaining_balance.to_f
+    assert_equal 350.0, top_up_b.reload.remaining_balance.to_f
+  end
+
   test "respects remaining balance after prior allocations" do
     isolate_allocations
 

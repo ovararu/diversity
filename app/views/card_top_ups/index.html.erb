@@ -33,6 +33,7 @@
         <th>Description</th>
         <th>Type</th>
         <th class="text-right">Net Amount</th>
+        <th class="text-right">Total Cost</th>
         <th class="text-right">Deductions</th>
         <th class="text-right">Cost %</th>
         <th class="text-right">Remaining</th>
@@ -46,6 +47,7 @@
           <td><%= link_to top_up.description.presence || "—", top_up %></td>
           <td><span class="badge badge-<%= top_up.source_type %>"><%= top_up.source_type.capitalize %></span></td>
           <td class="text-right"><%= number_to_currency(top_up.net_amount, unit: "", precision: 2) %></td>
+          <td class="text-right"><%= number_to_currency(top_up.gross_amount_computed, unit: "", precision: 2) %></td>
           <td class="text-right text-muted"><%= number_to_currency(top_up.total_deductions, unit: "", precision: 2) %></td>
           <td class="text-right">
             <span class="cost-ratio"><%= top_up.cost_ratio %>%</span>
