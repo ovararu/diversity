@@ -1,0 +1,12 @@
+<div class="deduction-row">
+  <%= f.text_field :name, placeholder: "Name (e.g. CAS)", class: "form-control form-control-inline" %>
+  <%= f.number_field :amount, placeholder: "Amount", class: "form-control form-control-inline", step: "0.01" %>
+  <%= f.number_field :percentage, placeholder: "%", class: "form-control form-control-inline", step: "0.01" %>
+  <%= f.select :paid_by, [["Employee", "employee"], ["Employer", "employer"]], {}, class: "form-control form-control-inline" %>
+  <% if f.object.persisted? %>
+    <%= f.hidden_field :_destroy, class: "destroy-flag" %>
+    <button type="button" class="btn btn-sm btn-danger" data-action="click->salary-calculator#removeDeduction">✕</button>
+  <% else %>
+    <button type="button" class="btn btn-sm btn-danger" data-action="click->salary-calculator#removeDeduction">✕</button>
+  <% end %>
+</div>

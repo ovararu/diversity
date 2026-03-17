@@ -1,0 +1,161 @@
+<% content_for :title, "#{@card_top_up.description} — Diversity" %>
+
+<div class="page-header">
+  <h1><%= @card_top_up.description.presence || @card_top_up.source_type.capitalize %></h1>
+  <div class="page-actions">
+    <%= link_to "Edit", edit_card_top_up_path(@card_top_up), class: "btn btn-sm" %>
+    <%= link_to "All Top-ups", card_top_ups_path, class: "btn btn-sm" %>
+  </div>
+</div>
+
+<% if @card_top_up.eur_rate && @card_top_up.eur_rate > 0 %>
+  <div class="eur-rate-badge">1 Euro = <%= number_to_currency(@card_top_up.eur_rate, unit: "", precision: 4) %> Lei</div>
+<% end %>
+
+<div class="salary-breakdown">
+  <div class="breakdown-header">
+    <strong>ANGAJAT</strong>
+    <span>Lei</span>
+    <% if @card_top_up.eur_rate && @card_top_up.eur_rate > 0 %><span>Euro</span><% end %>
+  </div>
+
+  <div class="breakdown-row row-gross">
+    <span><strong>Salariu Brut / Gross Amount</strong></span>
+    <span><strong><%= number_to_currency(@card_top_up.gross_amount_computed, unit: "", precision: 2) %></strong></span>
+    <% if @card_top_up.eur_rate && @card_top_up.eur_rate > 0 %>
+      <span><strong><%= number_to_currency(@card_top_up.gross_amount_computed / @card_top_up.eur_rate, unit: "", precision: 2) %></strong></span>
+    <% end %>
+  </div>
+
+  <% employee_deductions = @card_top_up.source_deductions.where(paid_by: "employee") %>
+  <% @card_top_up.source_deductions.each do |d| %>
+    <div class="breakdown-row row-deduction">
+      <span>
+        <%= d.name %>
+        <% if d.percentage && d.percentage > 0 %>
+          <span class="text-muted"><%= d.percentage %>%</span>
+        <% end %>
+      </span>
+      <span><%= number_to_currency(d.amount, unit: "", precision: 2) %></span>
+      <% if @card_top_up.eur_rate && @card_top_up.eur_rate > 0 %>
+        <span class="text-muted"><%= number_to_currency(d.amount / @card_top_up.eur_rate, unit: "", precision: 2) %></span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="breakdown-row row-net">
+    <span><strong>Salariu Net / Net Amount</strong></span>
+    <span><strong><%= number_to_currency(@card_top_up.net_amount, unit: "", precision: 2) %></strong></span>
+    <% if @card_top_up.eur_rate && @card_top_up.eur_rate > 0 %>
+      <span><strong><%= number_to_currency(@card_top_up.net_amount / @card_top_up.eur_rate, unit: "", precision: 2) %></strong></span>
+    <% end %>
+  </div>
+
+  <% employer_deductions = @card_top_up.source_deductions.where(paid_by: "employer") %>
+  <% if employer_deductions.any? %>
+    <div class="breakdown-header">
+      <strong>ANGAJATOR</strong>
+      <span>Lei</span>
+      <% if @card_top_up.eur_rate && @card_top_up.eur_rate > 0 %><span>Euro</span><% end %>
+    </div>
+    <% employer_deductions.each do |d| %>
+      <div class="breakdown-row row-deduction">
+        <span>
+          <%= d.name %>
+          <% if d.percentage && d.percentage > 0 %>
+            <span class="text-muted"><%= d.percentage %>%</span>
+          <% end %>
+        </span>
+        <span><%= number_to_currency(d.amount, unit: "", precision: 2) %></span>
+        <% if @card_top_up.eur_rate && @card_top_up.eur_rate > 0 %>
+          <span class="text-muted"><%= number_to_currency(d.amount / @card_top_up.eur_rate, unit: "", precision: 2) %></span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="breakdown-row row-total">
+      <span><strong>Total Cost (Salariu Complet)</strong></span>
+      <span><strong><%= number_to_currency(@card_top_up.gross_amount_computed + employer_deductions.sum(:amount), unit: "", precision: 2) %></strong></span>
+      <% if @card_top_up.eur_rate && @card_top_up.eur_rate > 0 %>
+        <span><strong><%= number_to_currency((@card_top_up.gross_amount_computed + employer_deductions.sum(:amount)) / @card_top_up.eur_rate, unit: "", precision: 2) %></strong></span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="breakdown-header">
+    <strong>TOTAL TAXE</strong>
+    <span>Lei</span>
+    <% if @card_top_up.eur_rate && @card_top_up.eur_rate > 0 %><span>Euro</span><% end %>
+  </div>
+
+  <div class="breakdown-row">
+    <span>Angajatul plateste statului</span>
+    <span><%= number_to_currency(@card_top_up.source_deductions.where(paid_by: "employee").sum(:amount), unit: "", precision: 2) %></span>
+    <% if @card_top_up.eur_rate && @card_top_up.eur_rate > 0 %>
+      <span class="text-muted"><%= number_to_currency(@card_top_up.source_deductions.where(paid_by: "employee").sum(:amount) / @card_top_up.eur_rate, unit: "", precision: 2) %></span>
+    <% end %>
+  </div>
+  <% if employer_deductions.any? %>
+    <div class="breakdown-row">
+      <span>Angajatorul plateste statului</span>
+      <span><%= number_to_currency(employer_deductions.sum(:amount), unit: "", precision: 2) %></span>
+      <% if @card_top_up.eur_rate && @card_top_up.eur_rate > 0 %>
+        <span class="text-muted"><%= number_to_currency(employer_deductions.sum(:amount) / @card_top_up.eur_rate, unit: "", precision: 2) %></span>
+      <% end %>
+    </div>
+  <% end %>
+  <div class="breakdown-row row-total">
+    <span><strong>Total taxe incasate de stat</strong></span>
+    <span><strong><%= number_to_currency(@card_top_up.total_deductions, unit: "", precision: 2) %></strong></span>
+    <% if @card_top_up.eur_rate && @card_top_up.eur_rate > 0 %>
+      <span><strong><%= number_to_currency(@card_top_up.total_deductions / @card_top_up.eur_rate, unit: "", precision: 2) %></strong></span>
+    <% end %>
+  </div>
+
+  <div class="breakdown-summary">
+    <% employee_pct = @card_top_up.cost_ratio %>
+    <% state_pct    = 100 - (@card_top_up.net_amount / @card_top_up.gross_amount_computed * 100).round(2) rescue 0 %>
+    Pentru a plati un salariu net de
+    <strong><%= number_to_currency(@card_top_up.net_amount, unit: "", precision: 0) %> lei</strong>,
+    angajatorul cheltuie
+    <strong><%= number_to_currency(@card_top_up.gross_amount_computed + (@card_top_up.source_deductions.where(paid_by: "employer").sum(:amount)), unit: "", precision: 0) %> lei</strong>
+  </div>
+
+  <div class="cost-bar">
+    <div class="cost-bar-employee" style="width: <%= [100 - @card_top_up.cost_ratio, 0].max %>%">
+      <%= number_to_currency(100 - @card_top_up.cost_ratio, unit: "", precision: 2) %>% Angajat
+    </div>
+    <div class="cost-bar-state" style="width: <%= @card_top_up.cost_ratio %>%">
+      <%= @card_top_up.cost_ratio %>% Stat
+    </div>
+  </div>
+</div>
+
+<% if @card_top_up.expense_allocations.any? %>
+  <div class="section-header">
+    <h2>Allocated Expenses</h2>
+    <span class="balance-remaining">Remaining: <strong><%= number_to_currency(@card_top_up.remaining_balance, unit: "", precision: 2) %> RON</strong></span>
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Description</th>
+        <th>Category</th>
+        <th class="text-right">Allocated</th>
+        <th class="text-right">Total Expense</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @card_top_up.expense_allocations.includes(:expense).each do |alloc| %>
+        <tr>
+          <td><%= alloc.expense.date.strftime("%d.%m.%Y") %></td>
+          <td><%= link_to alloc.expense.description, alloc.expense %></td>
+          <td><%= alloc.expense.category.presence || "—" %></td>
+          <td class="text-right"><%= number_to_currency(alloc.amount, unit: "", precision: 2) %></td>
+          <td class="text-right text-muted"><%= number_to_currency(alloc.expense.amount, unit: "", precision: 2) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

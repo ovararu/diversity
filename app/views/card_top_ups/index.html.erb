@@ -1,0 +1,65 @@
+<% content_for :title, "Card Top-ups — Diversity" %>
+
+<div class="page-header">
+  <h1>Debit Card Tracker</h1>
+</div>
+
+<div class="summary-cards">
+  <div class="summary-card">
+    <div class="summary-label">Total Loaded</div>
+    <div class="summary-amount"><%= number_to_currency(@total_loaded, unit: "", delimiter: ".", separator: ",", precision: 2) %> RON</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Total Spent</div>
+    <div class="summary-amount spent"><%= number_to_currency(@total_spent, unit: "", delimiter: ".", separator: ",", precision: 2) %> RON</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Card Balance</div>
+    <div class="summary-amount <%= @card_balance >= 0 ? 'positive' : 'negative' %>">
+      <%= number_to_currency(@card_balance, unit: "", delimiter: ".", separator: ",", precision: 2) %> RON
+    </div>
+  </div>
+</div>
+
+<% if @card_top_ups.empty? %>
+  <div class="empty-state">
+    <p>No top-ups yet. <%= link_to "Add your first top-up", new_card_top_up_path %></p>
+  </div>
+<% else %>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Description</th>
+        <th>Type</th>
+        <th class="text-right">Net Amount</th>
+        <th class="text-right">Deductions</th>
+        <th class="text-right">Cost %</th>
+        <th class="text-right">Remaining</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @card_top_ups.each do |top_up| %>
+        <tr>
+          <td><%= top_up.date.strftime("%d.%m.%Y") %></td>
+          <td><%= link_to top_up.description.presence || "—", top_up %></td>
+          <td><span class="badge badge-<%= top_up.source_type %>"><%= top_up.source_type.capitalize %></span></td>
+          <td class="text-right"><%= number_to_currency(top_up.net_amount, unit: "", precision: 2) %></td>
+          <td class="text-right text-muted"><%= number_to_currency(top_up.total_deductions, unit: "", precision: 2) %></td>
+          <td class="text-right">
+            <span class="cost-ratio"><%= top_up.cost_ratio %>%</span>
+          </td>
+          <td class="text-right <%= top_up.remaining_balance > 0 ? 'positive' : 'zero' %>">
+            <%= number_to_currency(top_up.remaining_balance, unit: "", precision: 2) %>
+          </td>
+          <td class="actions">
+            <%= link_to "Edit", edit_card_top_up_path(top_up), class: "btn btn-sm" %>
+            <%= button_to "Delete", top_up, method: :delete, class: "btn btn-sm btn-danger",
+                data: { turbo_confirm: "Delete this top-up?" } %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

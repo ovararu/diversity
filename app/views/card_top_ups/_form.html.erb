@@ -1,0 +1,113 @@
+<%= form_with model: card_top_up, data: { controller: "salary-calculator", salary_calculator_preview_url_value: salary_preview_card_top_ups_path } do |f| %>
+  <% if card_top_up.errors.any? %>
+    <div class="form-errors">
+      <% card_top_up.errors.full_messages.each do |msg| %>
+        <p><%= msg %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="form-group">
+    <%= f.label :source_type, "Source Type" %>
+    <%= f.select :source_type, CardTopUp::SOURCE_TYPES.map { |t| [t.capitalize, t] },
+        {},
+        { class: "form-control", data: { salary_calculator_target: "sourceType", action: "change->salary-calculator#toggleSalaryFields" } } %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :date %>
+    <%= f.date_field :date, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :description %>
+    <%= f.text_field :description, class: "form-control", placeholder: "e.g. Salariu Martie 2026" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :eur_rate, "EUR/RON Rate (optional)" %>
+    <%= f.number_field :eur_rate, class: "form-control", step: "0.0001", placeholder: "e.g. 5.0949" %>
+  </div>
+
+  <%# Salary-specific: gross input + auto-calculated fields %>
+  <div data-salary-calculator-target="salarySection">
+    <div class="form-group">
+      <label>Gross Salary (Lei)</label>
+      <input type="number" class="form-control" step="1" placeholder="e.g. 8548"
+             data-salary-calculator-target="gross"
+             data-action="input->salary-calculator#calculate">
+    </div>
+
+    <div data-salary-calculator-target="preview" class="salary-preview" style="display:none">
+      <table class="preview-table">
+        <tr class="row-gross">
+          <td>Salariu Brut</td>
+          <td data-salary-calculator-target="previewGross"></td>
+        </tr>
+        <tr>
+          <td>CAS 25%</td>
+          <td data-salary-calculator-target="previewCas"></td>
+        </tr>
+        <tr>
+          <td>CASS 10%</td>
+          <td data-salary-calculator-target="previewCass"></td>
+        </tr>
+        <tr>
+          <td>Impozit pe venit 10%</td>
+          <td data-salary-calculator-target="previewIv"></td>
+        </tr>
+        <tr>
+          <td>CAM 2.25% (angajator)</td>
+          <td data-salary-calculator-target="previewCam"></td>
+        </tr>
+        <tr class="row-net">
+          <td><strong>Salariu Net</strong></td>
+          <td data-salary-calculator-target="previewNet"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :net_amount, "Net Amount on Card (Lei)" %>
+    <%= f.number_field :net_amount, class: "form-control", step: "0.01",
+        data: { salary_calculator_target: "netAmount" } %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :gross_amount, "Gross Amount (Lei, for reference)" %>
+    <%= f.number_field :gross_amount, class: "form-control", step: "0.01",
+        data: { salary_calculator_target: "grossAmount" } %>
+  </div>
+
+  <div class="deductions-section">
+    <h3>Deductions / Taxes</h3>
+    <div id="deductions-container" data-salary-calculator-target="deductionsContainer">
+      <%= f.fields_for :source_deductions do |d| %>
+        <%= render "deduction_fields", f: d %>
+      <% end %>
+    </div>
+    <button type="button" class="btn btn-sm" id="add-deduction"
+            data-action="click->salary-calculator#addDeduction">
+      + Add Deduction
+    </button>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit class: "btn btn-primary" %>
+    <%= link_to "Cancel", card_top_ups_path, class: "btn" %>
+  </div>
+<% end %>
+
+<template id="deduction-template">
+  <div class="deduction-row">
+    <input type="text" name="card_top_up[source_deductions_attributes][NEW_INDEX][name]" placeholder="Name (e.g. CAS)" class="form-control form-control-inline">
+    <input type="number" name="card_top_up[source_deductions_attributes][NEW_INDEX][amount]" placeholder="Amount" class="form-control form-control-inline" step="0.01">
+    <input type="number" name="card_top_up[source_deductions_attributes][NEW_INDEX][percentage]" placeholder="%" class="form-control form-control-inline" step="0.01">
+    <select name="card_top_up[source_deductions_attributes][NEW_INDEX][paid_by]" class="form-control form-control-inline">
+      <option value="employee">Employee</option>
+      <option value="employer">Employer</option>
+    </select>
+    <button type="button" class="btn btn-sm btn-danger" data-action="click->salary-calculator#removeDeduction">✕</button>
+  </div>
+</template>

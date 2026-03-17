@@ -1,0 +1,56 @@
+<% content_for :title, "#{@expense.description} — Diversity" %>
+
+<div class="page-header">
+  <h1><%= @expense.description %></h1>
+  <div class="page-actions">
+    <%= link_to "Edit", edit_expense_path(@expense), class: "btn btn-sm" %>
+    <%= link_to "All Expenses", expenses_path, class: "btn btn-sm" %>
+  </div>
+</div>
+
+<div class="detail-card">
+  <div class="detail-row">
+    <span class="detail-label">Date</span>
+    <span><%= @expense.date.strftime("%d.%m.%Y") %></span>
+  </div>
+  <div class="detail-row">
+    <span class="detail-label">Amount</span>
+    <span><strong><%= number_to_currency(@expense.amount, unit: "", precision: 2) %> RON</strong></span>
+  </div>
+  <% if @expense.category.present? %>
+    <div class="detail-row">
+      <span class="detail-label">Category</span>
+      <span><%= @expense.category %></span>
+    </div>
+  <% end %>
+</div>
+
+<% if @expense.expense_allocations.any? %>
+  <h2>Allocated from</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Top-up</th>
+        <th>Source</th>
+        <th class="text-right">Cost Ratio</th>
+        <th class="text-right">Allocated</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @expense.expense_allocations.includes(:card_top_up).each do |alloc| %>
+        <tr>
+          <td><%= link_to alloc.card_top_up.description.presence || "—", alloc.card_top_up %></td>
+          <td><span class="badge badge-<%= alloc.card_top_up.source_type %>"><%= alloc.card_top_up.source_type.capitalize %></span></td>
+          <td class="text-right"><%= alloc.card_top_up.cost_ratio %>%</td>
+          <td class="text-right"><strong><%= number_to_currency(alloc.amount, unit: "", precision: 2) %></strong></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <% if @expense.unallocated_amount > 0 %>
+    <div class="flash flash-alert">
+      Warning: <%= number_to_currency(@expense.unallocated_amount, unit: "", precision: 2) %> RON could not be allocated (insufficient card balance).
+    </div>
+  <% end %>
+<% end %>
