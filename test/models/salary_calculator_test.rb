@@ -24,11 +24,11 @@ class SalaryCalculatorTest < ActiveSupport::TestCase
   # ---------------------------------------------------------------------------
   # Calculation with gross = 10_000 RON (no personal deduction)
   # ---------------------------------------------------------------------------
-  # CAS  = 10000 * 0.25 = 2500
-  # CASS = 10000 * 0.10 = 1000
-  # IV   = (10000 - 2500 - 1000 - 0) * 0.10 = 650
-  # CAM  = 10000 * 0.0225 = 225
-  # net  = 10000 - 2500 - 1000 - 650 = 5850
+  # CAM  = 10000 * 0.0225          = 225.00  (employer, calculated first)
+  # CAS  = 10000 * 0.25            = 2500.00
+  # CASS = 10000 * 0.10            = 1000.00
+  # IV   = (10000 - 225 - 2500 - 1000) * 0.10 = 6275 * 0.10 = 627.50
+  # net  = 10000 - 2500 - 1000 - 627.50       = 5872.50
 
   def result
     @result ||= SalaryCalculator.calculate(10_000)
@@ -36,6 +36,10 @@ class SalaryCalculatorTest < ActiveSupport::TestCase
 
   test "returns gross unchanged" do
     assert_equal 10_000, result[:gross]
+  end
+
+  test "calculates CAM correctly" do
+    assert_equal 225.0, result[:cam].to_f
   end
 
   test "calculates CAS correctly" do
@@ -46,20 +50,16 @@ class SalaryCalculatorTest < ActiveSupport::TestCase
     assert_equal 1000.0, result[:cass].to_f
   end
 
-  test "calculates IV correctly (applied on gross minus CAS minus CASS)" do
-    assert_equal 650.0, result[:iv].to_f
-  end
-
-  test "calculates CAM correctly" do
-    assert_equal 225.0, result[:cam].to_f
+  test "calculates IV correctly (applied on gross minus CAM minus CAS minus CASS)" do
+    assert_equal 627.50, result[:iv].to_f
   end
 
   test "calculates net correctly" do
-    assert_equal 5850.0, result[:net].to_f
+    assert_equal 5872.50, result[:net].to_f
   end
 
   test "total_employee_taxes is CAS + CASS + IV" do
-    assert_equal 4150.0, result[:total_employee_taxes].to_f
+    assert_equal 4127.50, result[:total_employee_taxes].to_f
   end
 
   test "total_employer_taxes is CAM" do
@@ -67,31 +67,36 @@ class SalaryCalculatorTest < ActiveSupport::TestCase
   end
 
   test "total_taxes is employee plus employer taxes" do
-    assert_equal 4375.0, result[:total_taxes].to_f
+    assert_equal 4352.50, result[:total_taxes].to_f
   end
 
   test "cost_ratio is total_taxes over total cost (net + all taxes)" do
-    # (4150 + 225) / (5850 + 4150 + 225) * 100 = 4375 / 10225 * 100
-    expected = (4375.0 / 10225.0 * 100).round(2)
+    # (4127.50 + 225) / (5872.50 + 4127.50 + 225) * 100 = 4352.50 / 10225 * 100
+    expected = (4352.50 / 10225.0 * 100).round(2)
     assert_equal expected, result[:cost_ratio]
   end
 
   # ---------------------------------------------------------------------------
-  # Personal deduction reduces IV base
+  # Personal deduction further reduces IV base
   # ---------------------------------------------------------------------------
   # gross=10000, personal_deduction=300
-  # CAS  = 2500, CASS = 1000
-  # IV   = (10000 - 2500 - 1000 - 300) * 0.10 = 6200 * 0.10 = 620
-  # net  = 10000 - 2500 - 1000 - 620 = 5880
+  # CAM  = 225, CAS = 2500, CASS = 1000
+  # IV   = (10000 - 225 - 2500 - 1000 - 300) * 0.10 = 5975 * 0.10 = 597.50
+  # net  = 10000 - 2500 - 1000 - 597.50 = 5902.50
 
   test "personal deduction reduces IV" do
     r = SalaryCalculator.calculate(10_000, personal_deduction: 300)
-    assert_equal 620.0, r[:iv].to_f
+    assert_equal 597.50, r[:iv].to_f
   end
 
   test "personal deduction increases net salary" do
     r = SalaryCalculator.calculate(10_000, personal_deduction: 300)
-    assert_equal 5880.0, r[:net].to_f
+    assert_equal 5902.50, r[:net].to_f
+  end
+
+  test "personal deduction does not affect CAM" do
+    r = SalaryCalculator.calculate(10_000, personal_deduction: 300)
+    assert_equal 225.0, r[:cam].to_f
   end
 
   test "personal deduction does not affect CAS" do
@@ -102,11 +107,6 @@ class SalaryCalculatorTest < ActiveSupport::TestCase
   test "personal deduction does not affect CASS" do
     r = SalaryCalculator.calculate(10_000, personal_deduction: 300)
     assert_equal 1000.0, r[:cass].to_f
-  end
-
-  test "personal deduction does not affect CAM" do
-    r = SalaryCalculator.calculate(10_000, personal_deduction: 300)
-    assert_equal 225.0, r[:cam].to_f
   end
 
   # ---------------------------------------------------------------------------
@@ -122,6 +122,7 @@ class SalaryCalculatorTest < ActiveSupport::TestCase
   test "handles zero gross" do
     r = SalaryCalculator.calculate(0)
     assert_equal 0, r[:gross]
+    assert_equal 0, r[:cam].to_f
     assert_equal 0, r[:cas].to_f
     assert_equal 0, r[:net].to_f
   end
@@ -147,8 +148,9 @@ class SalaryCalculatorTest < ActiveSupport::TestCase
   test "different gross amounts produce proportionally scaled taxes" do
     r1 = SalaryCalculator.calculate(5000)
     r2 = SalaryCalculator.calculate(10_000)
-    assert_equal r1[:cas].to_f * 2, r2[:cas].to_f
+    assert_equal r1[:cas].to_f * 2,  r2[:cas].to_f
     assert_equal r1[:cass].to_f * 2, r2[:cass].to_f
-    assert_equal r1[:cam].to_f * 2, r2[:cam].to_f
+    assert_equal r1[:cam].to_f * 2,  r2[:cam].to_f
+    assert_equal r1[:iv].to_f * 2,   r2[:iv].to_f
   end
 end

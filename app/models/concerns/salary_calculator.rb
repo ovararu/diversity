@@ -6,10 +6,10 @@ module SalaryCalculator
 
   def self.calculate(gross, personal_deduction: 0)
     gross = gross.to_d
+    cam  = (gross * CAM_RATE).round(2)
     cas  = (gross * CAS_RATE).round(2)
     cass = (gross * CASS_RATE).round(2)
-    iv   = ((gross - cas - cass - personal_deduction.to_d) * IV_RATE).round(2)
-    cam  = (gross * CAM_RATE).round(2)
+    iv   = ((gross - cam - cas - cass - personal_deduction.to_d) * IV_RATE).round(2)
     net  = gross - cas - cass - iv
 
     {
