@@ -256,63 +256,63 @@ class CardTopUpsControllerTest < ActionDispatch::IntegrationTest
   # ---------------------------------------------------------------------------
 
   test "GET salary_preview returns 200" do
-    get salary_preview_card_top_ups_path, params: { gross: "10000" }
+    get salary_preview_card_top_ups_path, params: { gross: "9780" }
     assert_response :success
   end
 
   test "GET salary_preview returns JSON content type" do
-    get salary_preview_card_top_ups_path, params: { gross: "10000" }
+    get salary_preview_card_top_ups_path, params: { gross: "9780" }
     assert_equal "application/json", response.media_type
   end
 
-  # gross param = total employer cost (Salariu Complet)
-  # At 10000: gross(brut)=9780, cam=220, cas=2445, cass=978, iv=636, net=5721
+  # gross param = Salariu Brut (employee base salary)
+  # At 9780: cam=220, total_cost=10000, cas=2445, cass=978, iv=636, net=5721
 
-  test "GET salary_preview returns total_cost equal to input" do
-    get salary_preview_card_top_ups_path, params: { gross: "10000" }
-    data = JSON.parse(response.body)
-    assert_equal 10000, data["total_cost"]
-  end
-
-  test "GET salary_preview returns correct gross (Salariu Brut)" do
-    get salary_preview_card_top_ups_path, params: { gross: "10000" }
+  test "GET salary_preview returns gross equal to input" do
+    get salary_preview_card_top_ups_path, params: { gross: "9780" }
     data = JSON.parse(response.body)
     assert_equal 9780, data["gross"]
   end
 
-  test "GET salary_preview returns correct net" do
-    get salary_preview_card_top_ups_path, params: { gross: "10000" }
-    data = JSON.parse(response.body)
-    assert_equal 5721, data["net"]
-  end
-
   test "GET salary_preview returns correct CAM" do
-    get salary_preview_card_top_ups_path, params: { gross: "10000" }
+    get salary_preview_card_top_ups_path, params: { gross: "9780" }
     data = JSON.parse(response.body)
     assert_equal 220, data["cam"]
   end
 
+  test "GET salary_preview returns total_cost as gross plus CAM" do
+    get salary_preview_card_top_ups_path, params: { gross: "9780" }
+    data = JSON.parse(response.body)
+    assert_equal 10000, data["total_cost"]
+  end
+
   test "GET salary_preview returns correct CAS" do
-    get salary_preview_card_top_ups_path, params: { gross: "10000" }
+    get salary_preview_card_top_ups_path, params: { gross: "9780" }
     data = JSON.parse(response.body)
     assert_equal 2445, data["cas"]
   end
 
   test "GET salary_preview returns correct CASS" do
-    get salary_preview_card_top_ups_path, params: { gross: "10000" }
+    get salary_preview_card_top_ups_path, params: { gross: "9780" }
     data = JSON.parse(response.body)
     assert_equal 978, data["cass"]
   end
 
   test "GET salary_preview returns correct IV" do
-    get salary_preview_card_top_ups_path, params: { gross: "10000" }
+    get salary_preview_card_top_ups_path, params: { gross: "9780" }
     data = JSON.parse(response.body)
     # iv = round((9780 - 2445 - 978) * 0.10) = round(635.7) = 636
     assert_equal 636, data["iv"]
   end
 
+  test "GET salary_preview returns correct net" do
+    get salary_preview_card_top_ups_path, params: { gross: "9780" }
+    data = JSON.parse(response.body)
+    assert_equal 5721, data["net"]
+  end
+
   test "GET salary_preview applies personal_deduction to IV" do
-    get salary_preview_card_top_ups_path, params: { gross: "10000", personal_deduction: "300" }
+    get salary_preview_card_top_ups_path, params: { gross: "9780", personal_deduction: "300" }
     data = JSON.parse(response.body)
     # iv = round((9780 - 2445 - 978 - 300) * 0.10) = round(605.7) = 606
     assert_equal 606, data["iv"]
