@@ -17,6 +17,12 @@
     <span class="detail-label">Amount</span>
     <span><strong><%= number_to_currency(@expense.amount, unit: "", precision: 2) %> RON</strong></span>
   </div>
+  <% if @expense.expense_allocations.any? %>
+    <div class="detail-row">
+      <span class="detail-label">Real Cost</span>
+      <span><strong><%= number_to_currency(@expense.real_cost, unit: "", precision: 2) %> RON</strong></span>
+    </div>
+  <% end %>
   <% if @expense.category.present? %>
     <div class="detail-row">
       <span class="detail-label">Category</span>
@@ -34,6 +40,7 @@
         <th>Source</th>
         <th class="text-right">Cost Ratio</th>
         <th class="text-right">Allocated</th>
+        <th class="text-right">Real Cost</th>
       </tr>
     </thead>
     <tbody>
@@ -43,6 +50,7 @@
           <td><span class="badge badge-<%= alloc.card_top_up.source_type %>"><%= alloc.card_top_up.source_type.capitalize %></span></td>
           <td class="text-right"><%= alloc.card_top_up.cost_ratio %>%</td>
           <td class="text-right"><strong><%= number_to_currency(alloc.amount, unit: "", precision: 2) %></strong></td>
+          <td class="text-right"><%= number_to_currency(alloc.real_cost, unit: "", precision: 2) %></td>
         </tr>
       <% end %>
     </tbody>

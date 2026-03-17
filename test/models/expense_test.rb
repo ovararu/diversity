@@ -99,6 +99,32 @@ class ExpenseTest < ActiveSupport::TestCase
   # after_create :allocate_to_top_ups — isolated tests (fixture data removed)
   # ---------------------------------------------------------------------------
 
+  # ---------------------------------------------------------------------------
+  # real_cost
+  # ---------------------------------------------------------------------------
+
+  test "real_cost sums real cost across all allocations" do
+    isolate_allocations
+
+    # top_up_a: net 500, deduction 500 → gross 1000, ratio = 50%
+    top_up_a = CardTopUp.create!(date: Date.today, net_amount: 500, source_type: "salary")
+    SourceDeduction.create!(card_top_up: top_up_a, name: "CAS", amount: 500)
+
+    # top_up_b: net 1000, no deductions → gross 1000, ratio = 0%
+    CardTopUp.create!(date: Date.today, net_amount: 1000, source_type: "transfer")
+
+    # 700 expense: 500 from A (real cost = 500 * 1000/500 = 1000), 200 from B (real cost = 200)
+    expense = Expense.create!(date: Date.today, description: "Mixed", amount: 700)
+    assert_equal 1200.0, expense.real_cost.to_f
+  end
+
+  test "real_cost equals amount when all top-ups have no deductions" do
+    isolate_allocations
+    CardTopUp.create!(date: Date.today, net_amount: 1000, source_type: "transfer")
+    expense = Expense.create!(date: Date.today, description: "Simple", amount: 300)
+    assert_equal 300.0, expense.real_cost.to_f
+  end
+
   # Each test in this section resets the DB to a clean state so fixture
   # top-ups do not interfere with allocation logic.
 

@@ -15,6 +15,17 @@ class Expense < ApplicationRecord
     amount - allocated_amount
   end
 
+  # Total real cost: sum of real_cost across all allocations
+  def real_cost
+    expense_allocations.includes(:card_top_up).sum { |a| a.real_cost }
+  end
+
+  # Weighted cost ratio: percentage of taxes in the real cost
+  def cost_ratio
+    return 0 if amount.zero? || real_cost.zero?
+    ((real_cost - amount) / amount.to_d * 100).round(2)
+  end
+
   private
 
   def allocate_to_top_ups

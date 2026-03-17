@@ -16,6 +16,8 @@
         <th>Description</th>
         <th>Category</th>
         <th class="text-right">Amount</th>
+        <th class="text-right">Real Cost</th>
+        <th class="text-right">Cost %</th>
         <th>Allocated from</th>
         <th></th>
       </tr>
@@ -27,6 +29,8 @@
           <td><%= link_to expense.description, expense %></td>
           <td><%= expense.category.presence || "—" %></td>
           <td class="text-right"><%= number_to_currency(expense.amount, unit: "", precision: 2) %></td>
+          <td class="text-right"><%= number_to_currency(expense.real_cost, unit: "", precision: 2) %></td>
+          <td class="text-right"><span class="cost-ratio"><%= expense.cost_ratio %>%</span></td>
           <td>
             <% expense.expense_allocations.each do |alloc| %>
               <div class="allocation-chip">
@@ -47,6 +51,8 @@
       <tr>
         <td colspan="3"><strong>Total</strong></td>
         <td class="text-right"><strong><%= number_to_currency(@expenses.sum(&:amount), unit: "", precision: 2) %></strong></td>
+        <td class="text-right"><strong><%= number_to_currency(@expenses.sum(&:real_cost), unit: "", precision: 2) %></strong></td>
+        <td></td>
         <td colspan="2"></td>
       </tr>
     </tfoot>
