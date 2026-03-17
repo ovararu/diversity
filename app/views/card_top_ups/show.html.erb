@@ -21,14 +21,14 @@
 
   <div class="breakdown-row row-gross">
     <span><strong>Salariu Brut / Gross Amount</strong></span>
-    <span><strong><%= number_to_currency(@card_top_up.gross_amount_computed, unit: "", precision: 2) %></strong></span>
+    <span><strong><%= number_to_currency(@card_top_up.salariu_brut, unit: "", precision: 2) %></strong></span>
     <% if @card_top_up.eur_rate && @card_top_up.eur_rate > 0 %>
-      <span><strong><%= number_to_currency(@card_top_up.gross_amount_computed / @card_top_up.eur_rate, unit: "", precision: 2) %></strong></span>
+      <span><strong><%= number_to_currency(@card_top_up.salariu_brut / @card_top_up.eur_rate, unit: "", precision: 2) %></strong></span>
     <% end %>
   </div>
 
   <% employee_deductions = @card_top_up.source_deductions.where(paid_by: "employee") %>
-  <% @card_top_up.source_deductions.each do |d| %>
+  <% employee_deductions.each do |d| %>
     <div class="breakdown-row row-deduction">
       <span>
         <%= d.name %>
@@ -75,9 +75,9 @@
 
     <div class="breakdown-row row-total">
       <span><strong>Total Cost (Salariu Complet)</strong></span>
-      <span><strong><%= number_to_currency(@card_top_up.gross_amount_computed + employer_deductions.sum(:amount), unit: "", precision: 2) %></strong></span>
+      <span><strong><%= number_to_currency(@card_top_up.gross_amount_computed, unit: "", precision: 2) %></strong></span>
       <% if @card_top_up.eur_rate && @card_top_up.eur_rate > 0 %>
-        <span><strong><%= number_to_currency((@card_top_up.gross_amount_computed + employer_deductions.sum(:amount)) / @card_top_up.eur_rate, unit: "", precision: 2) %></strong></span>
+        <span><strong><%= number_to_currency(@card_top_up.gross_amount_computed / @card_top_up.eur_rate, unit: "", precision: 2) %></strong></span>
       <% end %>
     </div>
   <% end %>
@@ -118,7 +118,7 @@
     Pentru a plati un salariu net de
     <strong><%= number_to_currency(@card_top_up.net_amount, unit: "", precision: 0) %> lei</strong>,
     angajatorul cheltuie
-    <strong><%= number_to_currency(@card_top_up.gross_amount_computed + (@card_top_up.source_deductions.where(paid_by: "employer").sum(:amount)), unit: "", precision: 0) %> lei</strong>
+    <strong><%= number_to_currency(@card_top_up.gross_amount_computed, unit: "", precision: 0) %> lei</strong>
   </div>
 
   <div class="cost-bar">

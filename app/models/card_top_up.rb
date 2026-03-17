@@ -14,6 +14,13 @@ class CardTopUp < ApplicationRecord
     source_deductions.sum(:amount)
   end
 
+  # Salariu Brut: net + employee deductions (CAS + CASS + IV)
+  def salariu_brut
+    employee_total = source_deductions.where(paid_by: "employee").sum(:amount)
+    net_amount + employee_total
+  end
+
+  # Salariu Complet: net + ALL deductions (employee + employer/CAM)
   def gross_amount_computed
     net_amount + total_deductions
   end

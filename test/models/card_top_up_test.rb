@@ -84,6 +84,26 @@ class CardTopUpTest < ActiveSupport::TestCase
   end
 
   # ---------------------------------------------------------------------------
+  # salariu_brut
+  # ---------------------------------------------------------------------------
+
+  test "salariu_brut equals net plus employee deductions only" do
+    top_up = card_top_ups(:salary_top_up)
+    # net 5000 + CAS 1250 + CASS 500 = 6750 (CAM 168.75 excluded — employer)
+    assert_equal 6750.0, top_up.salariu_brut.to_f
+  end
+
+  test "salariu_brut equals net when there are no deductions" do
+    top_up = card_top_ups(:transfer_top_up)
+    assert_equal top_up.net_amount, top_up.salariu_brut
+  end
+
+  test "salariu_brut is less than gross_amount_computed when employer deductions exist" do
+    top_up = card_top_ups(:salary_top_up)
+    assert top_up.salariu_brut < top_up.gross_amount_computed
+  end
+
+  # ---------------------------------------------------------------------------
   # gross_amount_computed
   # ---------------------------------------------------------------------------
 
