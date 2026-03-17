@@ -41,7 +41,7 @@
     <div data-salary-calculator-target="preview" class="salary-preview" style="display:none">
       <table class="preview-table">
         <tr class="row-gross">
-          <td>Salariu Brut</td>
+          <td><strong>Salariu Brut</strong></td>
           <td data-salary-calculator-target="previewGross"></td>
         </tr>
         <tr>
@@ -56,13 +56,20 @@
           <td>Impozit pe venit 10%</td>
           <td data-salary-calculator-target="previewIv"></td>
         </tr>
-        <tr>
-          <td>CAM 2.25% (angajator)</td>
-          <td data-salary-calculator-target="previewCam"></td>
-        </tr>
         <tr class="row-net">
           <td><strong>Salariu Net</strong></td>
           <td data-salary-calculator-target="previewNet"></td>
+        </tr>
+        <tr class="row-employer-header">
+          <td colspan="2"><strong>ANGAJATOR</strong></td>
+        </tr>
+        <tr>
+          <td>CAM 2.25%</td>
+          <td data-salary-calculator-target="previewCam"></td>
+        </tr>
+        <tr class="row-total">
+          <td><strong>Salariu Complet</strong></td>
+          <td data-salary-calculator-target="previewTotalCost"></td>
         </tr>
       </table>
     </div>

@@ -3,7 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = [
     "sourceType", "salarySection", "gross", "netAmount", "grossAmount",
-    "preview", "previewGross", "previewCas", "previewCass", "previewIv", "previewCam", "previewNet",
+    "preview", "previewGross", "previewCas", "previewCass", "previewIv", "previewCam", "previewNet", "previewTotalCost",
     "deductionsContainer"
   ]
   static values = { previewUrl: String }
@@ -34,8 +34,9 @@ export default class extends Controller {
     this.previewCasTarget.textContent    = this.fmt(data.cas)
     this.previewCassTarget.textContent   = this.fmt(data.cass)
     this.previewIvTarget.textContent     = this.fmt(data.iv)
-    this.previewCamTarget.textContent    = this.fmt(data.cam)
-    this.previewNetTarget.textContent    = this.fmt(data.net)
+    this.previewCamTarget.textContent        = this.fmt(data.cam)
+    this.previewNetTarget.textContent        = this.fmt(data.net)
+    this.previewTotalCostTarget.textContent  = this.fmt(data.total_cost)
 
     if (this.hasNetAmountTarget) this.netAmountTarget.value  = data.net
     if (this.hasGrossAmountTarget) this.grossAmountTarget.value = data.total_cost
